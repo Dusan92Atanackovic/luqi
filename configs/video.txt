@@ -1,0 +1,9 @@
+<object>;
+$ajdi:15;
+$name:Vlc;
+$vers:10;
+$imag:imgs/vlc.jpg;
+$cmnd:['sudo apt-get clean'];
+$delt:['sudo apt-get clean'];
+$updt:['sudo apt-get update'];
+</object>;

@@ -1,0 +1,10 @@
+<object>;
+$ajdi:13;
+$name:Image Magick;
+$vers:1.8;
+$imag:imgs/image_magick.jpg;
+$cmnd:['sudo apt-get clean'];
+$delt:['sudo apt-get clean'];
+$updt:['sudo apt-get update'];
+</object>;
+

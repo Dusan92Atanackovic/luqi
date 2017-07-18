@@ -1,0 +1,69 @@
+<object>;
+$ajdi:1;
+$name:Google Chrome;
+$vers:1.8;
+$imag:imgs/chrome.jpg;
+$cmnd:['sudo apt-get clean'];
+$delt:['sudo apt-get clean'];
+$updt:['sudo apt-get update'];
+</object>;
+
+<object>;
+$ajdi:2;
+$name:Skype;
+$vers:1.8;
+$imag:imgs/skype.jpg;
+$cmnd:['sudo dpkg -i /media/atana/D:/installations/skype-ubuntu-precise_4.3.0.37-1_i386.deb',' sudo apt-get install -f '];
+$delt:['sudo apt-get -y --purge remove skype:i386'];
+$updt:[''];
+</object>;
+
+<object>;
+$ajdi:3;
+$name:Team Viewer;
+$vers:10;
+$imag:imgs/team_viewer.jpg;
+$cmnd:['sudo apt-get install libjpeg62','sudo apt-get install libxtst6','sudo dpkg -i /media/atana/D:/installations/teamviewer_12.0.71510_i386.deb'];
+$delt:['sudo apt-get -y -f remove teamv*'];
+$updt:[''];
+</object>;
+
+<object>;
+$ajdi:4;
+$name:Twitter d;
+$vers:10;
+$imag:imgs/twitter.jpg;
+$cmnd:['sudo apt-get clean'];
+$delt:['sudo apt-get clean'];
+$updt:['sudo apt-get update'];
+</object>;
+
+<object>;
+$ajdi:5;
+$name:Viber 2;
+$vers:10;
+$imag:imgs/viber.jpg;
+$cmnd:['sudo apt-get clean'];
+$delt:['sudo apt-get clean'];
+$updt:['sudo apt-get update'];
+</object>;
+
+<object>;
+$ajdi:6;
+$name:Ubuntu Tweak;
+$vers:10;
+$imag:imgs/ubuntu_tweak.jpg;
+$cmnd:['sudo dpkg -i /media/atana/D:/installations/ubuntu-tweak_0.8.7-1.deb'];
+$delt:['sudo apt-get purge -y ubuntu-tweak', 'sudo apt-get -y autoremove];
+$updt:[''];
+</object>;
+
+<object>;
+$ajdi:7;
+$name:Thunderbird Mail;
+$vers:10;
+$imag:imgs/thunderbird.jpg;
+$cmnd:['sudo apt-get install -y thunderbird'];
+$delt:['sudo apt-get remove --purge thunderbird -y'];
+$updt:[''];
+</object>;
