@@ -1,3 +1,6 @@
+# RUN
+new luqi.py is file that is currently developing, and gradient is help file, mainly for classes (name left from first two classes)
+
 # luqi
 
 This program is still developing, it is open source so all changes are possible.
