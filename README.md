@@ -1,5 +1,5 @@
 # RUN
-new luqi.py is file that is currently developing, and gradient is help file, mainly for classes (name left from first two classes)
+new luqi.py is file that is currently developing, and gradient is helping file, mainly for classes (name left from first two classes)
 
 # luqi
 
@@ -12,5 +12,5 @@ or		      dux992atana@gmail.com
 
 
 luqi.py is  old version of programm 
-  - not developing anymore, bur file remains because of the code that might be used again
+  - not developing anymore, but file remains because of the code that might be used again
   - it needs configs directory isntead of db
