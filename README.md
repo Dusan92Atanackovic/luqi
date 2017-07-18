@@ -13,4 +13,4 @@ or		      dux992atana@gmail.com
 
 luqi.py is  old version of programm 
   - not developing anymore, but file remains because of the code that might be used again
-  - it needs configs directory isntead of db
+  - it uses configs directory instead of db (that's why it is old)
