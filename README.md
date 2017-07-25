@@ -1,5 +1,7 @@
+pyqt branch is currently active branch (qorks with PyQt4 as GUI base), but master branch also works (works with tkinter as GUI base)
+
 # RUN
-new luqi.py is file that is currently developing, and gradient is helping file, mainly for classes (name left from first two classes)
+new luqi.py  /   luqi.py from pyqt branch
 
 # luqi
 
