@@ -1,4 +1,0 @@
-<object>;
-$ajdi:1;
-$name:Google Chrome;
-$vers:1.8;
