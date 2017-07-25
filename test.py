@@ -1,108 +1,321 @@
-__author__ = 'atana'
+# -*- coding: utf-8 -*-
+
+# Form implementation generated from reading ui file 'trying.ui'
+#
+# Created by: PyQt4 UI code generator 4.11.4
+#
+# WARNING! All changes made in this file will be lost!
+
+from PyQt4 import QtCore, QtGui
+from PIL import ImageTk, Image
+import sqlite
+import sys
+
+try:
+    _fromUtf8 = QtCore.QString.fromUtf8
+except AttributeError:
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
+
+db = 'programs.db'
+
+class Object():
+
+    def __init__(self, id , name, vers, cmnd, updt, delt, imag, cat):
+        self.id = id
+        self.name = name
+        self.version = vers
+        self.img = imag
+        self.command = cmnd
+        self.delete = delt
+        self.update = updt
+        self.category = cat
+
+class Ui_MainWindow(object):
 
 
-from tkinter import *
+    def setupUi(self, MainWindow):
 
-class ResizableCanvasFrame(Frame):
-    '''
-    Class that handles creating resizable frames on a canvas.
-    Don't pack it.
+        MainWindow.setObjectName(_fromUtf8("MainWindow"))
+        MainWindow.resize(1366, 768)
 
-    Set save_callback to whatever you want to happen when the mouse
-    lets up on the border. You can catch <Configure> too, but at least
-    in my case I didn't want to save the new position on every mouse move.
-    '''
-    def __init__(self, master, x, y, w, h, *args, **kwargs):
-        # master should be a Canvas
-        self.frame_thickness = 5
-        Frame.__init__(
-            self,
-            master,
-            *args,
-            borderwidth = self.frame_thickness,
-            cursor = 'fleur',
-            **kwargs
-        )
-        self.canvas = master
-        self.resize_state = None
-        self.bind('<Button-1>', self.mousedown)
-        self.bind('<B1-Motion>', self.mousemove)
-        self.bind('<ButtonRelease-1>', self.mouseup)
-        self.bind('<Destroy>', self.delete_item)
-        # add self to canvas
-        self.itemid = self.canvas.create_window(
-            x,
-            y,
-            window=self,
-            anchor="nw",
-            width=w,
-            height=h
-        )
-        self.save_callback = None
+        self.centralwidget = QtGui.QWidget(MainWindow)
+        self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
 
-    def canvas_coords(self):
-        return map(int, self.canvas.coords(self.itemid))
+        self.horizontalLayout = QtGui.QHBoxLayout(self.centralwidget)
+        self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
 
-    def move(self, dx, dy):
-        # strictly, this is out of the range of RCF,
-        # but it helps with the law of demeter
-        self.canvas.move(self.itemid, dx, dy)
+        # building categories section
+        self.build_categories()
 
-    def mousedown(self, event):
-        window_width = self.winfo_width()
-        window_height = self.winfo_height()
-        self.resize_state = {
-            'start_coords': (event.x, event.y),
-            'last_coords': (event.x, event.y),
-            'left_edge': (0 <= event.x < self.frame_thickness),
-            'right_edge': (window_width - self.frame_thickness <= event.x < window_width),
-            'top_edge': (0 <= event.y < self.frame_thickness),
-            'bottom_edge': (window_height - self.frame_thickness <= event.y < window_height),
-        }
+        # building programs section
+        self.build_programs()
 
-    def mousemove(self, event):
-        if self.resize_state:
-            resize = self.resize_state # debug var
-            event_x = event.x
-            event_y = event.y
-            # distance of cursor from original position of window
-            delta = map(int, (event.x - self.resize_state['start_coords'][0],
-                              event.y - self.resize_state['start_coords'][1]))
-            # load current pos, size
-            new_x, new_y = self.canvas_coords()
-            new_width = int(self.canvas.itemcget(self.itemid, 'width'))
-            new_height = int(self.canvas.itemcget(self.itemid, 'height'))
-            # handle x resize/move
-            if self.resize_state['left_edge']:
-                # must move pos and resize
-                new_x += delta[0]
-                new_width -= delta[0]
-            elif self.resize_state['right_edge']:
-                new_width += (event.x - self.resize_state['last_coords'][0])
-            # handle y resize/move
-            if self.resize_state['top_edge']:
-                new_y += delta[1]
-                new_height -= delta[1]
-            elif self.resize_state['bottom_edge']:
-                new_height += (event.y - self.resize_state['last_coords'][1])
-            # save new settings in item, not card yet
-            self.resize_state['last_coords'] = (event.x, event.y)
-            self.canvas.coords(self.itemid, new_x, new_y)
-            self.canvas.itemconfig(self.itemid, width=new_width, height=new_height)
+        # initial fill with programs
+        self.categoryFilter(None)
 
-    def mouseup(self, event):
-        if self.resize_state:
-            self.resize_state = None
-            if self.save_callback:
-                self.save_callback()
+        # buildint terminal section
+        self.terminal_build()
 
-    def delete_item(self, event):
-        self.canvas.delete(self.itemid)
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.menubar = QtGui.QMenuBar(MainWindow)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1366, 25))
+        self.menubar.setObjectName(_fromUtf8("menubar"))
+        MainWindow.setMenuBar(self.menubar)
+        self.statusbar = QtGui.QStatusBar(MainWindow)
+        self.statusbar.setObjectName(_fromUtf8("statusbar"))
+        MainWindow.setStatusBar(self.statusbar)
 
-def main():
-    root = Tk()
-    ResizableCanvasFrame(root)
+        self.retranslateUi(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-    root.mainloop(0,0,500,500)
+    # function to define structure for categories
+    def build_categories(self):
 
-main()
+        self.cateogries = QtGui.QFrame(self.centralwidget)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.cateogries.sizePolicy().hasHeightForWidth())
+        self.cateogries.setMinimumSize(QtCore.QSize(220, 0))
+        self.cateogries.setFrameShape(QtGui.QFrame.StyledPanel)
+        self.cateogries.setFrameShadow(QtGui.QFrame.Raised)
+        self.cateogries.setObjectName(_fromUtf8("cateogries"))
+        self.cateogries.setStyleSheet(_fromUtf8("background-color: qlineargradient(\n"
+                                                "spread:pad, \n"
+                                                "x1:0.1, y1:0.3, \n"
+                                                "x2:0.7, y2:0.1, \n"
+                                                "stop:0 lightgreen, stop:1 white);"))
+
+        self.verticalLayout = QtGui.QVBoxLayout(self.cateogries)
+        self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
+
+        self.scrollArea = QtGui.QScrollArea(self.cateogries)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.scrollArea.sizePolicy().hasHeightForWidth())
+        self.scrollArea.setSizePolicy(sizePolicy)
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollArea.setObjectName(_fromUtf8("scrollArea"))
+
+        self.scrollAreaWidgetContents = QtGui.QWidget()
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 218, 657))
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.scrollAreaWidgetContents.sizePolicy().hasHeightForWidth())
+
+
+        self.scrollAreaWidgetContents.setSizePolicy(sizePolicy)
+        self.scrollAreaWidgetContents.setObjectName(_fromUtf8("scrollAreaWidgetContents"))
+
+        self.verticalLayout_3 = QtGui.QVBoxLayout(self.scrollAreaWidgetContents)
+        self.verticalLayout_3.setObjectName(_fromUtf8("verticalLayout_3"))
+
+        # get data from db and fill scrollbar with them
+        self.category_object()
+
+        spacerItem = QtGui.QSpacerItem(20, 570, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout_3.addItem(spacerItem)
+        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
+        self.verticalLayout.addWidget(self.scrollArea)
+        self.horizontalLayout.addWidget(self.cateogries)
+
+    # function do define look of a cateogry btn
+    def category_object(self):
+        # for child in ):
+        #     print(child, 'child')
+
+        cat_list = sqlite.get_categories(db)
+        # for i in range(0,5):
+        for item in cat_list:
+            self.item = item
+            im_path = item[2]
+
+            # categoryFilter(item)
+            btn = QtGui.QPushButton(self.scrollAreaWidgetContents)
+            btn.setMinimumSize(QtCore.QSize(200, 0))
+            btn.setObjectName('cat_btn')
+            btn.setText(_fromUtf8(item[1]))
+            btn.setStyleSheet(_fromUtf8("background-color: qlineargradient(spread:pad, x1:0.3, y1:0, x2:1, y2:0, stop:0 white , stop:1 lightgreen); text-align: left; padding-left:10px; font-weight:bold;"
+                                        "padding-top:2px; padding-bottom:2px; border-radius:5px; border:1px solid green; "))
+            btn.setIcon(QtGui.QIcon(im_path))
+            btn.setIconSize(QtCore.QSize(40, 30))
+            btn.clicked.connect(lambda event, item=self.item: self.categoryFilter(item))
+
+            self.verticalLayout_3.addWidget(btn)
+
+    # filter programms by categories
+    def categoryFilter(self, param):
+        tlist = []
+
+        if param is None:
+            prog_list = sqlite.get_programs_data(db, param)
+        else:
+            prog_list = sqlite.get_programs_data(db, param[0])
+
+        # print('pl', prog_list)
+
+        for j in prog_list:
+            obj = Object(j[0], j[1], j[2], j[3], j[4], j[5], j[6], j[7])
+            tlist.append(obj)
+
+        self.program_object(tlist)
+
+    # makes programm buttons on layout
+    def build_programs(self):
+
+        self.programs = QtGui.QFrame(self.centralwidget)
+        self.programs.setStyleSheet(_fromUtf8("background-color: qlineargradient(\n"
+                                                "spread:pad, \n"
+                                                "x1:0.1, y1:0.3, \n"
+                                                "x2:0.7, y2:0.1, \n"
+                                                "stop:0 lightgreen, stop:1 white);"))
+
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.programs.sizePolicy().hasHeightForWidth())
+
+        self.programs.setSizePolicy(sizePolicy)
+        self.programs.setMinimumSize(QtCore.QSize(0, 0))
+        self.programs.setFrameShape(QtGui.QFrame.StyledPanel)
+        self.programs.setFrameShadow(QtGui.QFrame.Raised)
+        self.programs.setObjectName(_fromUtf8("programs"))
+        self.gridLayout = QtGui.QGridLayout(self.programs)
+        self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
+        self.scrollArea_2 = QtGui.QScrollArea(self.programs)
+
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+
+        sizePolicy.setHeightForWidth(self.scrollArea_2.sizePolicy().hasHeightForWidth())
+        self.scrollArea_2.setSizePolicy(sizePolicy)
+        self.scrollArea_2.setWidgetResizable(True)
+        self.scrollArea_2.setObjectName(_fromUtf8("scrollArea_2"))
+
+        self.scrollAreaWidgetContents_2 = QtGui.QWidget()
+        self.scrollAreaWidgetContents_2.setGeometry(QtCore.QRect(0, 0, 661, 657))
+        self.scrollAreaWidgetContents_2.setObjectName(_fromUtf8("scrollAreaWidgetContents_2"))
+
+        self.gridLayout_2 = QtGui.QGridLayout(self.scrollAreaWidgetContents_2)
+        self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
+
+        spacerItem1 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.gridLayout_2.addItem(spacerItem1, 3, 2, 1, 1)
+        self.scrollArea_2.setWidget(self.scrollAreaWidgetContents_2)
+        self.gridLayout.addWidget(self.scrollArea_2, 2, 3, 1, 2)
+        self.horizontalLayout.addWidget(self.programs)
+
+    # defines look of program button
+    def program_object(self, objects):
+
+
+        childs = self.scrollAreaWidgetContents_2.findChildren(QtGui.QPushButton)
+        for child in childs:
+            child.setParent(None)
+
+        cc = 0
+        cr = 0
+        for object in objects:
+            program = QtGui.QPushButton(self.scrollAreaWidgetContents_2)
+            sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.Minimum)
+            sizePolicy.setHorizontalStretch(0)
+            sizePolicy.setVerticalStretch(0)
+            sizePolicy.setHeightForWidth(program.sizePolicy().hasHeightForWidth())
+            program.setSizePolicy(sizePolicy)
+            program.setMinimumSize(QtCore.QSize(80, 80))
+
+            stil = "border-image:url(%s); background-repeat: no-repeat;" % (object.img)
+            program.setStyleSheet(_fromUtf8(stil))
+            program.setText(_fromUtf8(""))
+            program.setObjectName(_fromUtf8("pushButton_6"))
+            self.gridLayout_2.addWidget(program, cr, cc, 1, 1)
+            cc += 1
+            if cc == 6:
+                cc = 0
+                cr += 1
+
+    #function to define terminal output
+    def terminal_build(self):
+
+        self.terminal = QtGui.QFrame(self.centralwidget)
+
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.terminal.sizePolicy().hasHeightForWidth())
+
+        self.terminal.setSizePolicy(sizePolicy)
+        self.terminal.setMinimumSize(QtCore.QSize(300, 0))
+        self.terminal.setMaximumSize(QtCore.QSize(400, 16777215))
+        self.terminal.setFrameShape(QtGui.QFrame.StyledPanel)
+        self.terminal.setFrameShadow(QtGui.QFrame.Raised)
+        self.terminal.setObjectName(_fromUtf8("terminal"))
+
+        self.verticalLayout_2 = QtGui.QVBoxLayout(self.terminal)
+        self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
+
+        self.textEdit = QtGui.QTextEdit(self.terminal)
+
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.textEdit.sizePolicy().hasHeightForWidth())
+
+        self.textEdit.setSizePolicy(sizePolicy)
+        self.textEdit.setStyleSheet(_fromUtf8("background-color: rgb(85, 0, 127); color: rgb(255, 255, 255);"))
+        self.textEdit.setObjectName(_fromUtf8("textEdit"))
+
+        self.verticalLayout_2.addWidget(self.textEdit)
+        self.horizontalLayout.addWidget(self.terminal)
+
+
+    def retranslateUi(self, MainWindow):
+        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
+        # self.pushButton_2.setText(_translate("MainWindow", "PushButton", None))
+        # self.pushButton_3.setText(_translate("MainWindow", "PushButton", None))
+        # self.pushButton.setText(_translate("MainWindow", "PushButton", None))
+        self.textEdit.setToolTip(_translate("MainWindow", "Terminal output", None))
+        self.textEdit.setWhatsThis(_translate("MainWindow", "Terminal otuput", None))
+        self.textEdit.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'Ubuntu\'; font-size:11pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">rewrwerew</p></body></html>", None))
+
+
+    # def pil_image(self, path, x, y):
+    # # return image object with custom size, mainly for buttons
+    #     try:
+    #         imagen = Image.open(path)
+    #         imagen = imagen.resize((x, y), Image.ANTIALIAS)
+    #         img = ImageTk.PhotoImage(imagen)
+    #         return img
+    #     except:
+    #         imagen = Image.open('imgs/required/default.jpg')
+    #         imagen = imagen.resize((x, y), Image.ANTIALIAS)
+    #         img = ImageTk.PhotoImage(imagen)
+    #         return img
+
+
+
+if __name__ == "__main__":
+
+    app = QtGui.QApplication(sys.argv)
+    MainWindow = QtGui.QMainWindow()
+    ui = Ui_MainWindow()
+    ui.setupUi(MainWindow)
+    MainWindow.show()
+    sys.exit(app.exec_())
