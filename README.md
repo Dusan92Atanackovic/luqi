@@ -1,8 +1,3 @@
 # luqi
 
-This program is still developing, it is open source so all changes are possible.
-I am trying to make quick installer for linux 
-
-
-email for questions : dusan.atanackovic.pydev@gmail.com
-or		      dux992atana@gmail.com
+This is pyqt design for the app. since i founded it much better than tkinter which is in the master branch file new luqi.py
