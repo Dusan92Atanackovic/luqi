@@ -128,22 +128,21 @@ def insert_into_categories(db_file, category):
 # update category
 def update_category_name( db_file, item, lbl):
 
-    # print (item, 'item ', lbl.get(), ' lbl')
     try:
         conn = sqlite3.connect(db_file)
 
         query = "UPDATE categories SET category=? WHERE id=?;"
         cur = conn.cursor()
-        cur.execute(query, (lbl.get(), item))
+        cur.execute(query, (lbl.text(), item))
         conn.commit()
 
-        title = 'Category has been renamed succesfully !'
-        message = 'This changes will be applied with next start of app. Do you want to restart the app now?'
-        ans = mb.askquestion(title, message)
-
-        if ans == 'yes' or ans is True:
-            python = sys.executable                                 # restart app
-            os.execl(python, python, * sys.argv)
+        # title = 'Category has been renamed succesfully !'
+        # message = 'This changes will be applied with next start of app. Do you want to restart the app now?'
+        # ans = mb.askquestion(title, message)
+        #
+        # if ans == 'yes' or ans is True:
+        python = sys.executable                                 # restart app
+        os.execl(python, python, * sys.argv)
 
     except Error as e:
         print("exception in update_category_name", e)
