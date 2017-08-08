@@ -118,8 +118,8 @@ def insert_into_categories(db_file, category):
         resp = True
 
     except sqlite3.Error as e:
-        print("exception in insert into categories", e)
-        resp = False
+        # print("exception in insert into categories", e)
+        resp = e
 
     finally:
         conn.close()
@@ -135,20 +135,14 @@ def update_category_name( db_file, item, lbl):
         cur = conn.cursor()
         cur.execute(query, (lbl.text(), item))
         conn.commit()
-
-        # title = 'Category has been renamed succesfully !'
-        # message = 'This changes will be applied with next start of app. Do you want to restart the app now?'
-        # ans = mb.askquestion(title, message)
-        #
-        # if ans == 'yes' or ans is True:
-        python = sys.executable                                 # restart app
-        os.execl(python, python, * sys.argv)
+        resp = True
 
     except Error as e:
-        print("exception in update_category_name", e)
+        resp = e
 
     finally:
         conn.close()
+        return resp
 
 # update image
 def update_category(db_file, id, img):
@@ -172,30 +166,20 @@ def update_category(db_file, id, img):
 # remove category
 def remove_category(db_file, id):
     try:
-        ask_confirm = 'Are you sure that you want to remove this category ?'
-        confirm_message = 'You will remove only the category, programs will remain and they can be managed in "unsorted programs" .'
-        ans = mb.askquestion(ask_confirm, confirm_message)
-        if ans == 'yes' or ans is True:
 
-            conn = sqlite3.connect(db_file)
+        conn = sqlite3.connect(db_file)
 
-            query = "DELETE from categories WHERE id=?;"
-            cur = conn.cursor()
-            cur.execute(query, (id,))
-            conn.commit()
+        query = "DELETE from categories WHERE id=?;"
+        cur = conn.cursor()
+        cur.execute(query, (id,))
+        conn.commit()
 
-            title = 'Category has been removed !'
-            message = 'This changes will be applied with next start of app. Do you want to restart the app now?'
-            ans2 = mb.askquestion(title, message)
-
-            if ans2 == 'yes' or ans2 is True:
-                python = sys.executable                                 # restart app
-                os.execl(python, python, * sys.argv)
+        resp = True
 
     except Error as e:
-        print("exception in update_category", e)
+        # print("exception in update_category", e)
+        resp = e
 
     finally:
-        try:
-            conn.close()
-        except:pass
+        conn.close()
+        return resp

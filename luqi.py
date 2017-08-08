@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
-
-
 from PyQt4 import QtCore, QtGui
 from PIL import ImageTk, Image
+from shutil import copyfile
 import sqlite
-import sys
+import time
+import hashlib
+import sys, os
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -42,7 +43,19 @@ class Object():
         self.category = cat
 
 
-class Ui_MainWindow(object):
+class fileDialogDemo(QtGui.QWidget):
+
+    def __init__(self, parent=None):
+        super(fileDialogDemo, self).__init__(parent)
+        self.fname = QtGui.QFileDialog.getOpenFileName(self, 'Open file', 'c:\\', "Image files(*.jpg *.gif *.png)")
+        self.setWindowModality(QtCore.Qt.ApplicationModal)
+
+
+    def getPath(self):
+        return self.fname
+
+
+class uiMainWindow(object):
 
 
     def setupUi(self, MainWindow):
@@ -219,6 +232,7 @@ class Ui_MainWindow(object):
             self.category_object(item, cr)
             cr += 1
 
+
     # function do define look of  cateogry btn
     def category_object(self, item, cr):
 
@@ -307,13 +321,13 @@ class Ui_MainWindow(object):
     # defines look of program button
     def program_object(self, objects):
 
-
         childs = self.scrollAreaWidgetContents_2.findChildren(QtGui.QPushButton)
         for child in childs:
             child.setParent(None)
 
         cc = 0
         cr = 0
+
         for object in objects:
             program = QtGui.QPushButton(self.scrollAreaWidgetContents_2)
             sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.Minimum)
@@ -333,8 +347,7 @@ class Ui_MainWindow(object):
                 cc = 0
                 cr += 1
 
-
-    # ************************ TEMINAL BLOCK *************************
+    # ************************ TERMINAL BLOCK *************************
 
     #function to define terminal output
     def terminal_build(self):
@@ -538,66 +551,7 @@ class addCategoryForm(object):
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
-
-
-    def _insertIntoCategories(self, db, le):
-
-        var = le.text()
-        var2 = var.title()
-        ans = False
-        try:
-            if len(var2) > 0:
-                ans = sqlite.insert_into_categories(db, var2)
-                le.setText('')
-
-        except Exception as e:
-            print('exception in add cat 2', e)
-
-        finally:
-            if ans is True:
-                self.reBuildCategories()
-
-
-    def reBuildCategories(self):
-
-        global ui
-
-        childs = self.frame_2.findChildren(QtGui.QFrame)
-
-        for child in childs:
-            child.setParent(None)
-
-        cat_list = sqlite.get_categories(db)
-
-        for item in cat_list:
-            self.single_category_object(item)
-
-        ui.reBuildCategories()
-
-    #
-    # def handleKeyRelease(self, event):
-    #     print('key release:', event.key())
-    #     QtGui.QLineEdit.keyReleaseEvent(self.lineEdit, event)
-
-
-    def modal(self):
-        d = QtGui.QDialog()
-        d.setModal( True )
-
-        b1 = QtGui.QPushButton("ok",d)
-        b1.move(50,50)
-        b1.clicked.connect(lambda event: self.yes(d))
-
-        d.setWindowTitle("Dialog")
-        d.setWindowModality(QtCore.Qt.ApplicationModal)
-        d.exec_()
-
-        print('b1 ans', self.ans)
-
-
-    def yes(self, d):
-        self.ans =  True
-        d.setParent(None)
+        Form.setWindowModality(QtCore.Qt.ApplicationModal)
 
 
     def single_category_object(self, item):
@@ -643,8 +597,7 @@ class addCategoryForm(object):
         self.pushButton_4.setStyleSheet(_fromUtf8("border-image: url(imgs/required/btns/edit.jpg);background-color: transparent;"))
         self.pushButton_4.setText(_fromUtf8(""))
         self.pushButton_4.setObjectName(_fromUtf8("pushButton_4"))
-        # self.pushButton_4.clicked.connect(lambda event, entry=self.lineEdit_2: sqlite.update_category_name(db, item[0], entry))
-        self.pushButton_4.clicked.connect(lambda event: self.modal())
+        self.pushButton_4.clicked.connect(lambda event, id=item[0], le=self.lineEdit_2: self.modal('edit', 'Are you sure you want to rename this category ?', id, le))
 
         # ------------------------------------  block ------------------------------------------------- #
 
@@ -653,17 +606,161 @@ class addCategoryForm(object):
         self.pushButton_3.setStyleSheet(_fromUtf8("border-image: url(imgs/required/btns/ch_pic.png); background-color: transparent;"))
         self.pushButton_3.setText(_fromUtf8(""))
         self.pushButton_3.setObjectName(_fromUtf8("pushButton_3"))
+        self.pushButton_3.clicked.connect(lambda event, id=item[0]: self.__chIcon(id))
         self.horizontalLayout_3.addWidget(self.pushButton_3)
 
         # ------------------------------------  block ------------------------------------------------- #
 
         self.pushButton_2 = QtGui.QPushButton(self.frame_3)
-        self.pushButton_2.setStyleSheet(_fromUtf8("border-image: url(imgs/required/btns/trash.png);background-color: transparent;"))
+        self.pushButton_2.setStyleSheet(_fromUtf8("border-image: url(imgs/required/btns/cancel.png);background-color: transparent;"))
         self.pushButton_2.setText(_fromUtf8(""))
         self.pushButton_2.setObjectName(_fromUtf8("pushButton_2"))
+        self.pushButton_2.clicked.connect(lambda event, id=item[0], le=self.lineEdit_2: self.modal('delete', 'Are you sure you want to delete this category ?', id, le))
         self.horizontalLayout_3.addWidget(self.pushButton_2)
 
         self.verticalLayout_2.addWidget(self.frame_3)
+
+
+    def modal(self, switch, message, category_id, entry):
+
+        confirm = QtGui.QMessageBox()
+        confirm.setWindowTitle("Confirm action")
+        confirm.setText(message)
+
+        btnYes = confirm.addButton("Yes", QtGui.QMessageBox.YesRole)
+        btnYes.clicked.connect(lambda event: self.__getAns(True))
+
+        btnNo = confirm.addButton("No", QtGui.QMessageBox.NoRole)
+        btnNo.clicked.connect(lambda event: self.__getAns(False))
+
+        confirm.setDefaultButton(btnYes)
+        confirm = confirm.exec_()
+
+        if self.ans is True:
+            if switch == 'edit':
+                self.__editCategory(category_id, entry)
+
+            if switch == 'delete':
+                self.__delCategory(category_id)
+
+
+    def reBuildCategories(self):
+
+        global ui
+
+        childs = self.frame_2.findChildren(QtGui.QFrame)
+
+        for child in childs:
+            child.setParent(None)
+
+        cat_list = sqlite.get_categories(db)
+
+        for item in cat_list:
+            self.single_category_object(item)
+
+        ui.reBuildCategories()
+
+    # ------------------------------- db actions -----------------------------------------
+
+    def _insertIntoCategories(self, db, le):
+
+        var = le.text()
+        var2 = var.title()
+        ans = False
+
+        if len(var2) > 0:
+            ans = sqlite.insert_into_categories(db, var2)
+            le.setText('')
+
+        if ans is True:
+            self.reBuildCategories()
+            print( 'neki toaster ovde')
+        else:
+            print("insertInto cateogires error" , ans)
+
+
+    def __getAns(self, param):
+        self.ans =  param
+
+
+    def __editCategory(self, category_id, entry):
+        response = sqlite.update_category_name(db, category_id, entry)
+
+        if response is True:
+            self.reBuildCategories()
+            print(' neki toaster ako bi mogao')
+        else:
+            print( 'ima greska, error', response)
+
+
+    def __delCategory(self, category_id):
+
+        response = sqlite.remove_category(db, category_id)
+        if response is True:
+            self.reBuildCategories()
+            print(' neki toaster ako bi mogao')
+        else:
+            print( 'ima greska, error', response)
+
+
+    def __chIcon(self, id):
+        '''
+        1 - file chooser
+        2 - proveriti da li je fajl u luqi/imgs folderu
+        3 - ako nije modal - da li da napravi kopiju tamo
+        4 - ako jeste ,sqlite fja
+        '''
+        # fp = '/home/atana/Documents/python projects/luqi/luqi/imgs/audacious.jpg'
+        # fp = '/home/atana/Pictures/download.jpg'
+
+        file_path = fileDialogDemo()
+        fp = file_path.getPath()
+        # print( 'fp', type(fp))
+
+        # check if correct path is  chosen
+        if_exist = os.path.isfile(fp)
+        # print('if exist', if_exist)
+
+        if if_exist == True:
+            cwd = os.getcwd() + '/imgs/required'
+            img_dir, fileName = os.path.split(fp)
+
+            if cwd == img_dir:
+                # print('1')
+                sqlite.update_category(db, id, fp)
+
+            else:
+                # print('2')
+                dst = cwd + '/' + fileName
+                if_exist = os.path.isfile(dst)
+
+                if if_exist == True:
+                    # print('3')
+                    # if file alredy exists
+                    # split it in name and extension
+                    index = fileName.index('.')
+                    name = fileName[:index]
+                    extension = fileName[index:]
+
+                    # make time variable
+                    timeMaked = time.strftime("%c")
+                    # hash the time
+                    hash = hashlib.md5(timeMaked.encode()).hexdigest()
+
+                    # add hash to file name to avoid overwriting the file
+                    new_dst = cwd + '/' + name + '.' + hash + '.' + extension
+                    copyfile(fp, new_dst)
+
+                else:
+                    # print('4')
+                    copyfile(fp, dst)
+
+                sqlite.update_category(db, id, dst)
+
+
+            self.reBuildCategories()
+
+    # --------------------------------  block  -------------------------------------
 
 
     def retranslateUi(self, Form):
@@ -680,7 +777,7 @@ def main():
 
         app = QtGui.QApplication(sys.argv)
         MainWindow = QtGui.QMainWindow()
-        ui = Ui_MainWindow()
+        ui = uiMainWindow()
         ui.setupUi(MainWindow)
         MainWindow.show()
 
