@@ -50,16 +50,26 @@ class Ui_Form(object):
         self.horizontalLayout = QtGui.QHBoxLayout()
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
 
+        # -------------- start of widget definitions -------------------------- #
+
+        # THIS IS FIRTS INPUT #
+
         self.lineEdit = QtGui.QLineEdit(self.frame)
         self.lineEdit.setObjectName(_fromUtf8("lineEdit"))
         self.horizontalLayout.addWidget(self.lineEdit)
+
+        # AND THIS IS FIRST BUTTON
 
         self.pushButton = QtGui.QPushButton(self.frame)
         self.pushButton.setMinimumSize(QtCore.QSize(50, 0))
         self.pushButton.setStyleSheet(_fromUtf8("border-image: url(imgs/required/btns/add.png);background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 white, stop:1 white);"))
         self.pushButton.setText(_fromUtf8(""))
         self.pushButton.setObjectName(_fromUtf8("pushButton"))
+        self.pushButton.clicked.connect(lambda event: self.btnBehavior())
         self.horizontalLayout.addWidget(self.pushButton)
+
+        # -------------- end of widget definitions -------------------------- #
+
 
         self.horizontalLayout_2.addLayout(self.horizontalLayout)
 
@@ -96,6 +106,11 @@ class Ui_Form(object):
         self.horizontalLayout_3 = QtGui.QHBoxLayout(self.frame_3)
         self.horizontalLayout_3.setObjectName(_fromUtf8("horizontalLayout_3"))
 
+
+        # -------------- start of widget definitions, second row -------------------------- #
+
+        # THIS IS SECOND INPUT
+
         self.lineEdit_2 = QtGui.QLineEdit(self.frame_3)
 
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
@@ -107,6 +122,9 @@ class Ui_Form(object):
 
         self.horizontalLayout_3.addWidget(self.lineEdit_2)
 
+
+        #THIS IS SECOND, THIRD AND FOURTH BUTTONS
+
         self.pushButton_4 = QtGui.QPushButton(self.frame_3)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -115,6 +133,7 @@ class Ui_Form(object):
         self.pushButton_4.setSizePolicy(sizePolicy)
         self.pushButton_4.setStyleSheet(_fromUtf8("border-image: url(imgs/required/btns/edit.jpg);background-color: transparent;"))
         self.pushButton_4.setText(_fromUtf8(""))
+        self.pushButton_4.clicked.connect(lambda event: self.btnBehavior())
         self.pushButton_4.setObjectName(_fromUtf8("pushButton_4"))
 
         self.horizontalLayout_3.addWidget(self.pushButton_4)
@@ -122,13 +141,17 @@ class Ui_Form(object):
         self.pushButton_3.setStyleSheet(_fromUtf8("border-image: url(imgs/required/btns/ch_pic.png); background-color: transparent;"))
         self.pushButton_3.setText(_fromUtf8(""))
         self.pushButton_3.setObjectName(_fromUtf8("pushButton_3"))
+        self.pushButton_3.clicked.connect(lambda event: self.btnBehavior())
         self.horizontalLayout_3.addWidget(self.pushButton_3)
 
         self.pushButton_2 = QtGui.QPushButton(self.frame_3)
         self.pushButton_2.setStyleSheet(_fromUtf8("border-image: url(imgs/required/btns/trash.png);background-color: transparent;"))
         self.pushButton_2.setText(_fromUtf8(""))
         self.pushButton_2.setObjectName(_fromUtf8("pushButton_2"))
+        self.pushButton_2.clicked.connect(lambda event: self.btnBehavior())
         self.horizontalLayout_3.addWidget(self.pushButton_2)
+
+        # -------------- end of widget definitions -------------------------- #
 
         self.verticalLayout_3.addWidget(self.frame_3)
         self.verticalLayout_2.addLayout(self.verticalLayout_3)
@@ -149,6 +172,8 @@ class Ui_Form(object):
         self.pushButton_2.setToolTip(_translate("Form", "<html><head/><body><p>delete</p></body></html>", None))
         self.pushButton_2.setWhatsThis(_translate("Form", "<html><head/><body><p>delete</p></body></html>", None))
 
+    def btnBehavior(self):
+        print('btn clicked');
 
 
 if __name__ == "__main__":
