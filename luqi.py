@@ -256,9 +256,9 @@ class uiMainWindow(object):
     # filter programms by categories
     def categoryFilter(self, param):
         tlist = []
-
-        if param is None:
-            prog_list = sqlite.get_programs_data(db, param)
+        print('param', param)
+        if param is None or param[1] == 'All':
+            prog_list = sqlite.get_programs_data(db, None)
         else:
             prog_list = sqlite.get_programs_data(db, param[0])
 
@@ -395,7 +395,7 @@ class uiMainWindow(object):
                 acf = addCategoryForm()
                 acf.setupUi()
                 acf.Form.show()
-                acf.Form.exec_()
+                # acf.Form.exec_()
             # except:
             #     pass
 
@@ -446,7 +446,7 @@ class addCategoryForm(object):
         #       > Frame                                 self.frame_2
         #           > objects (entry and 3 btns)        reBuildCAtegories function
 
-        self.Form = QtGui.QDialog()
+        self.Form = QtGui.QWidget()
         Form = self.Form
         Form.setObjectName(_fromUtf8("Form"))
         Form.resize(504, 550)
@@ -504,7 +504,7 @@ class addCategoryForm(object):
         self.lineEdit = QtGui.QLineEdit(self.frame)
         self.lineEdit.setObjectName(_fromUtf8("lineEdit"))
         self.lineEdit.setStyleSheet("background-color: white;")
-        # self.lineEdit.keyReleaseEvent = self.handleKeyRelease
+        self.lineEdit.keyReleaseEvent = self.handleKeyRelease
         self.horizontalLayout.addWidget(self.lineEdit)
 
         self.pushButton = QtGui.QPushButton(self.frame)
@@ -660,27 +660,35 @@ class addCategoryForm(object):
 
         ui.reBuildCategories()
 
+
+    def handleKeyRelease(self, event):
+        # print('key release:', event.key(), type(event.key()))
+        QtGui.QLineEdit.keyReleaseEvent(self.lineEdit, event)
+        if event.key() == 16777220:
+            self._insertIntoCategories(db, self.lineEdit)
+
     # ------------------------------- db actions -----------------------------------------
 
-    def _insertIntoCategories(self, db, le):
+    def __getAns(self, param):
+        self.ans =  param
 
+
+    def _insertIntoCategories(self, db, le):
+        global ui
         var = le.text()
         var2 = var.title()
-        ans = False
 
         if len(var2) > 0:
             ans = sqlite.insert_into_categories(db, var2)
             le.setText('')
 
-        if ans is True:
-            self.reBuildCategories()
-            print( 'neki toaster ovde')
+            if ans is True:
+                self.reBuildCategories()
+                ui.statusbar.showMessage('Success, new category has been added', 3000)
+            else:
+                ui.statusbar.showMessage(str(ans), 3000)
         else:
-            print("insertInto cateogires error" , ans)
-
-
-    def __getAns(self, param):
-        self.ans =  param
+            ui.statusbar.showMessage('Category can not be empty string', 3000)
 
 
     def __editCategory(self, category_id, entry):
@@ -688,9 +696,9 @@ class addCategoryForm(object):
 
         if response is True:
             self.reBuildCategories()
-            print(' neki toaster ako bi mogao')
+            ui.statusbar.showMessage('Success, category has been updated', 3000)
         else:
-            print( 'ima greska, error', response)
+            ui.statusbar.showMessage(str(response), 3000)
 
 
     def __delCategory(self, category_id):
@@ -698,9 +706,9 @@ class addCategoryForm(object):
         response = sqlite.remove_category(db, category_id)
         if response is True:
             self.reBuildCategories()
-            print(' neki toaster ako bi mogao')
+            ui.statusbar.showMessage('Success, category has been deleted', 3000)
         else:
-            print( 'ima greska, error', response)
+            ui.statusbar.showMessage(str(response), 3000)
 
 
     def __chIcon(self, id):
@@ -761,7 +769,6 @@ class addCategoryForm(object):
             self.reBuildCategories()
 
     # --------------------------------  block  -------------------------------------
-
 
     def retranslateUi(self, Form):
         Form.setWindowTitle(_translate("Form", "Form", None))

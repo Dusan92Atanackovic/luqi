@@ -118,7 +118,6 @@ def insert_into_categories(db_file, category):
         resp = True
 
     except sqlite3.Error as e:
-        # print("exception in insert into categories", e)
         resp = e
 
     finally:
@@ -156,8 +155,7 @@ def update_category(db_file, id, img):
         ans = True
 
     except Error as e:
-        print("exception in update_category", e)
-        ans = False
+        ans = e
 
     finally:
         conn.close()
@@ -177,7 +175,6 @@ def remove_category(db_file, id):
         resp = True
 
     except Error as e:
-        # print("exception in update_category", e)
         resp = e
 
     finally:

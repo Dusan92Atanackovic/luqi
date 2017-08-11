@@ -1,11 +1,3 @@
-# -*- coding: utf-8 -*-
-
-# Form implementation generated from reading ui file 'add_cat_form_ui.ui'
-#
-# Created by: PyQt4 UI code generator 4.11.4
-#
-# WARNING! All changes made in this file will be lost!
-
 from PyQt4 import QtCore, QtGui
 
 try:
@@ -24,9 +16,7 @@ except AttributeError:
 
 class Ui_Form(object):
 
-    def setupUi(self):
-        self.Form = QtGui.QWidget()
-        Form = self.Form
+    def setupUi(self, Form):
         Form.setObjectName(_fromUtf8("Form"))
         Form.resize(504, 550)
         self.verticalLayout = QtGui.QVBoxLayout(Form)
@@ -65,7 +55,6 @@ class Ui_Form(object):
         self.pushButton.setStyleSheet(_fromUtf8("border-image: url(imgs/required/btns/add.png);background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 white, stop:1 white);"))
         self.pushButton.setText(_fromUtf8(""))
         self.pushButton.setObjectName(_fromUtf8("pushButton"))
-        self.pushButton.clicked.connect(lambda event: self.btnBehavior())
         self.horizontalLayout.addWidget(self.pushButton)
 
         # -------------- end of widget definitions -------------------------- #
@@ -172,16 +161,25 @@ class Ui_Form(object):
         self.pushButton_2.setToolTip(_translate("Form", "<html><head/><body><p>delete</p></body></html>", None))
         self.pushButton_2.setWhatsThis(_translate("Form", "<html><head/><body><p>delete</p></body></html>", None))
 
+
+
+class Dialog(QtGui.QDialog, Ui_Form):
+    def __init__(self, parent=None):
+        QtGui.QDialog.__init__(self, parent)
+        self.setupUi(self)
+
+        for pb in self.findChildren(QtGui.QPushButton):
+            pb.setAutoDefault(False)
+
+        self.pushButton.clicked.connect(self.btnBehavior)
+
     def btnBehavior(self):
-        print('btn clicked');
+        print('btn clicked')
 
 
 if __name__ == "__main__":
     import sys
     app = QtGui.QApplication(sys.argv)
-    # Form = QtGui.QDialog()
-    ui = Ui_Form()
-    ui.setupUi()
-    ui.Form.show()
+    w = Dialog()
+    w.show()
     sys.exit(app.exec_())
-
