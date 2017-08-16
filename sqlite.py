@@ -1,8 +1,6 @@
 import sqlite3
 from sqlite3 import Error
-from tkinter import Label, Frame, Button, BOTH
-import tkinter.messagebox as mb
-import os, sys
+
 
 # queries
 # sve exceptione treba staviti kao modal
