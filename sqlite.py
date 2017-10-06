@@ -1,7 +1,9 @@
-import sqlite3
-from sqlite3 import Error
 
-
+try:
+    import sqlite3
+    from sqlite3 import Error
+except Exception as e:
+    print('Error in importing libs : sqlite : ', e)
 # queries
 # sve exceptione treba staviti kao modal
 
@@ -54,7 +56,6 @@ def get_programs_data(db_file, category):
         cur = conn.cursor()
         cur.execute(query)
         data = cur.fetchall()
-        # print ("Table -programs-: %s" % data )
         return data
 
     except Error as e:
@@ -70,12 +71,51 @@ def insert_into_programs(conn, **program_data):
     placeholders = ':'+', :'.join(program_data.keys())
     query = 'INSERT INTO programs (%s) VALUES (%s)' % (columns, placeholders)
 
-    # print (query, 'query')
     cur = conn.cursor()
     cur.execute(query, program_data)
     conn.commit()
 
+# update fields only
+def update_program(db_file, **fields):
 
+    try:
+        conn = sqlite3.connect(db_file)
+        query = 'UPDATE programs SET name=?, version=?, install_cmd=?, update_cmd=?, remove_cmd=? WHERE id=?'
+        cur = conn.cursor()
+        cur.execute(query, (fields['name'], fields['vers'], fields['inst'], fields['updt'], fields['delt'], fields['id']))
+        conn.commit()
+        resp = True
+
+    except Error as e:
+        resp = e
+
+    finally:
+        conn.close()
+        return resp
+
+# update program image
+def update_program_img(db_file, id, img):
+    try:
+        conn = sqlite3.connect(db_file)
+
+        query = "UPDATE programs SET image=? WHERE id=?;"
+        cur = conn.cursor()
+        cur.execute(query, (img, id))
+        conn.commit()
+        ans = True
+
+    except Error as e:
+        ans = e
+
+    finally:
+        conn.close()
+        return ans
+
+# switch category for chosen program
+def update_category(db_file, **fields):
+    category = fields['cat']
+    id = fields['id']
+    print(category, id)
 
 
 # SQL FOR TABLE CATEGORIES

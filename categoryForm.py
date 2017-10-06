@@ -1,14 +1,18 @@
 __author__ = 'atana'
 
-from PyQt4 import QtCore, QtGui
-import globalVars as gv
-from shutil import copyfile
-import sqlite
-import time
-import hashlib
-import os
-import fileDialogs as fd
+#this is EDIT category form
 
+try:
+    from PyQt4 import QtCore, QtGui
+    import globalVars as gv
+    from shutil import copyfile
+    import sqlite
+    import time
+    import hashlib
+    import os
+    import fileDialogs as fd
+except Exception as e:
+    print('Error in importing libs : categoryForm : ', e)
 
 
 try:

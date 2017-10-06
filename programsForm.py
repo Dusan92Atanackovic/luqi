@@ -1,5 +1,15 @@
+# this is EDIT programs FORM
+
 from PyQt4 import QtCore, QtGui
-import globalVars as gv
+try:
+    from shutil import copyfile
+    import globalVars as gv
+    import sqlite
+    import subprocess
+    import sys, os ,time, hashlib
+    import fileDialogs as fd
+except Exception as e:
+    print('Error in importing libs : programsForm: ', e)
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -37,9 +47,12 @@ class programsFormClass(object):
 
     '''
 
-    def __init__(self, ui, programObject):
+    def __init__(self, ui, programObject, terminal, app):
         self.ui = ui
         self.data = programObject
+        self.terminal = terminal
+        self.terminal.setText('This is terminal-like widget')
+        self.app = app
 
 
     def setupUi(self):
@@ -78,6 +91,7 @@ class programsFormClass(object):
         self.imageButton.setMinimumSize(QtCore.QSize(120, 100))
         self.imageButton.setSizePolicy(sizePolicy)
         self.imageButton.setObjectName(_fromUtf8("imageButton"))
+        self.imageButton.clicked.connect(lambda event: self.ch_pic())
         self.horizontalLayout.addWidget(self.imageButton)
 
         # ------------------------------------  block ------------------------------------------------- #
@@ -217,6 +231,7 @@ class programsFormClass(object):
 
         self.installButton = QtGui.QPushButton(self.frame_2)
         self.installButton.setObjectName(_fromUtf8("installButton"))
+        self.installButton.clicked.connect(lambda event: self.run_command(self.lineEdit_install))
         self.horizontalLayout_2.addWidget(self.installButton)
 
         self.lineEdit_install = QtGui.QLineEdit(self.frame_2)
@@ -234,6 +249,7 @@ class programsFormClass(object):
 
         self.updateButton = QtGui.QPushButton(self.frame_2)
         self.updateButton.setObjectName(_fromUtf8("updateButton"))
+        self.updateButton.clicked.connect(lambda event: self.run_command(self.lineEdit_update))
         self.horizontalLayout_3.addWidget(self.updateButton)
 
 
@@ -251,6 +267,7 @@ class programsFormClass(object):
 
         self.uninstallButton = QtGui.QPushButton(self.frame_2)
         self.uninstallButton.setObjectName(_fromUtf8("uninstallButton"))
+        self.uninstallButton.clicked.connect(lambda event: self.run_command(self.lineEdit_uninstall))
         self.horizontalLayout_4.addWidget(self.uninstallButton)
 
         self.lineEdit_uninstall = QtGui.QLineEdit(self.frame_2)
@@ -286,6 +303,7 @@ class programsFormClass(object):
         self.saveButton.setSizePolicy(sizePolicy)
         self.saveButton.setObjectName(_fromUtf8("saveButton"))
         self.saveButton.setIcon(QtGui.QIcon(gv.saveDisket))
+        self.saveButton.clicked.connect(lambda event: self.updateProgram())
 
         # ------------------------------------  block ------------------------------------------------- #
 
@@ -300,6 +318,27 @@ class programsFormClass(object):
         Form.setWindowModality(QtCore.Qt.ApplicationModal)
 
 
+    def updateProgram(self):
+
+        fields = {
+        'name': self.lineEdit_Name.text(),
+        'vers': self.lineEdit_Version.text(),
+        'inst': self.lineEdit_install.text(),
+        'updt': self.lineEdit_update.text(),
+        'delt': self.lineEdit_uninstall.text(),
+        'id'  : self.data.id }
+
+        try:
+            resp = sqlite.update_program(gv.db, **fields)
+            if resp is True:
+                self.ui.statusbar.showMessage('Program has been updated successfully', 3000)
+            else:
+                error = 'Exception in updateProgram: ' + str(resp)
+                self.ui.statusbar.showMessage(error, 3000)
+        except Exception as e:
+            error = 'Exception in updateProgram: ' + str(e)
+            self.ui.statusbar.showMessage(error, 3000)
+
 
     def fillData(self):
         stil = "border-image:url(%s); background-repeat: no-repeat;" % (self.data.img)
@@ -313,11 +352,96 @@ class programsFormClass(object):
 
     def retranslateUi(self, Form):
         Form.setWindowTitle(_translate("Form", "Form", None))
-        # self.imageButton.setText(_translate("Form", "image", None))
         self.nameLabel.setText(_translate("Form", "    name :", None))
         self.versionLabel.setText(_translate("Form", "version :", None))
-        # self.dirButton.setText(_translate("Form", "dir", None))
         self.installButton.setText(_translate("Form", "install", None))
         self.updateButton.setText(_translate("Form", "update", None))
         self.uninstallButton.setText(_translate("Form", "uninstall", None))
         self.saveButton.setText(_translate("Form", "Save", None))
+
+
+    def run_command(self, cmnd):
+        sudo_password = '18901890' + '\n'
+        sudos = ['sudo', '-S']
+        terminal = self.terminal
+
+        terminal.clear()
+
+        for item in eval(cmnd.text()):
+            cmd = sudos + item.split()
+
+            p = subprocess.Popen(cmd,  stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1, universal_newlines=True)
+            p.stdin.write(sudo_password)
+            p.poll()
+
+            while True:
+                line = p.stdout.readline()
+                terminal.append(line)
+                terminal.moveCursor(QtGui.QTextCursor.End)
+                self.app.processEvents()
+                if not line and p.poll is not None: break
+
+            while True:
+                err = p.stderr.readline()
+                terminal.append(err)
+                terminal.moveCursor(QtGui.QTextCursor.End)
+                self.app.processEvents()
+                if not err and p.poll is not None: break
+            terminal.append('\n * END OF PROCESS *')
+
+
+    def fif(self):
+        #find installation file
+        pass
+
+
+    def ch_pic(self):
+        id = self.data.id
+
+
+        file_path = fd.fileDialog()
+        fp = file_path.getPath()
+
+        # check if correct path is  chosen
+        if_exist = os.path.isfile(fp)
+
+        if if_exist == True:
+            cwd = os.getcwd() + '/imgs'
+            img_dir, fileName = os.path.split(fp)
+
+            if cwd == img_dir:
+                sqlite.update_category(gv.db, id, fp)
+
+            else:
+                dst = cwd + '/' + fileName
+                if_exist = os.path.isfile(dst)
+
+                if if_exist == True:
+                    # if file alredy exists
+                    # split it in name and extension
+                    index = fileName.index('.')
+                    name = fileName[:index]
+                    extension = fileName[index:]
+
+                    # make time variable
+                    timeMaked = time.strftime("%c")
+                    # hash the time
+                    hash = hashlib.md5(timeMaked.encode()).hexdigest()
+
+                    # add hash to file name to avoid overwriting the file
+                    new_dst = cwd + '/' + name + '.' + hash + '.' + extension
+                    copyfile(fp, new_dst)
+
+                else:
+                    copyfile(fp, dst)
+
+                ans = sqlite.update_program_img(gv.db, id, dst)
+
+                if ans is True:
+                    self.ui.statusbar.showMessage('Image has been updated', 3000)
+                    self.ui.categoryFilter((self.data.category, None))
+
+                else:
+                    error = 'Exception in ch_pic: ' + str(ans)
+                    self.ui.statusbar.showMessage(error, 3000)
+

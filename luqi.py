@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
 
-from PyQt4 import QtCore, QtGui
-from categoryForm import addCategoryForm
-from programsForm import programsFormClass
-import sqlite
-import fileDialogs as fd
-import sys, os
-import globalVars
+try:
+    from PyQt4 import QtCore, QtGui
+    from categoryForm import addCategoryForm
+    from programsForm import programsFormClass
+    from addProgramForm import addProgramForm
+    import sqlite
+    import fileDialogs as fd
+    import sys, os
+    import globalVars
+
+except Exception as e:
+    print('Error in importing libs : luqi: ', e)
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -25,7 +30,7 @@ except AttributeError:
 
 
 ui = None
-
+app = None
 
 class Object():
 
@@ -250,7 +255,7 @@ class uiMainWindow(object):
             obj = Object(j[0], j[1], j[2], j[3], j[4], j[5], j[6], j[7])
             tlist.append(obj)
 
-        self.program_object(tlist)
+        self.reBuildPrograms(tlist)
 
 
     # ************************ PROGRAMS BLOCK ************************
@@ -302,35 +307,37 @@ class uiMainWindow(object):
         self.horizontalLayout.addWidget(self.programs)
 
 
-    # defines look of program button
-    def program_object(self, objects):
+    def reBuildPrograms(self, prog_list):
 
         childs = self.scrollAreaWidgetContents_2.findChildren(QtGui.QPushButton)
         for child in childs:
             child.setParent(None)
-
         cc = 0
         cr = 0
-
-        for object in objects:
-            program = QtGui.QPushButton(self.scrollAreaWidgetContents_2)
-            sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.Minimum)
-            sizePolicy.setHorizontalStretch(0)
-            sizePolicy.setVerticalStretch(0)
-            sizePolicy.setHeightForWidth(program.sizePolicy().hasHeightForWidth())
-            program.setSizePolicy(sizePolicy)
-            program.setMinimumSize(QtCore.QSize(80, 80))
-
-            stil = "border-image:url(%s); background-repeat: no-repeat;" % (object.img)
-            program.setStyleSheet(_fromUtf8(stil))
-            program.setText(_fromUtf8(""))
-            program.setObjectName(_fromUtf8("pushButton_6"))
-            program.clicked.connect(lambda event, obj=object: self.showProgramPopUp(obj))
-            self.gridLayout_2.addWidget(program, cr, cc, 1, 1)
+        for item in prog_list:
+            self.program_object(item, cr, cc)
             cc += 1
             if cc == 6:
                 cc = 0
                 cr += 1
+
+    # defines look of program button
+    def program_object(self, objects, cr, cc):
+
+        program = QtGui.QPushButton(self.scrollAreaWidgetContents_2)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(program.sizePolicy().hasHeightForWidth())
+        program.setSizePolicy(sizePolicy)
+        program.setMinimumSize(QtCore.QSize(80, 80))
+
+        stil = "border-image:url(%s); background-repeat: no-repeat;" % (objects.img)
+        program.setStyleSheet(_fromUtf8(stil))
+        program.setText(_fromUtf8(""))
+        program.setObjectName(_fromUtf8("pushButton_6"))
+        program.clicked.connect(lambda event, obj=objects: self.showProgramPopUp(obj))
+        self.gridLayout_2.addWidget(program, cr, cc, 1, 1)
 
     # ************************ TERMINAL BLOCK *************************
 
@@ -382,21 +389,23 @@ class uiMainWindow(object):
 
         elif(command == 'add programs'):
 
-            d = QtGui.QDialog()
-            b1 = QtGui.QPushButton("programs", d)
-            b1.move(50, 50)
-            d.setWindowTitle("Dialog")
-            d.setWindowModality(QtCore.Qt.ApplicationModal)
-            d.exec_()
+            try:
+                self.pcf = addProgramForm(ui)
+                self.pcf.setupUi()
+                self.pcf.Form.show()
+
+            except Exception as e:
+                print('e in addPrograms', e)
 
         elif(command == 'Quit'):
             sys.exit(0)
 
 
     def showProgramPopUp(self, program):
-
+        global ui, app
         try:
-            self.pform = programsFormClass(ui, program)
+            terminal = ui.textEdit
+            self.pform = programsFormClass(ui, program, terminal, app)
             self.pform.setupUi()
             self.pform.Form.show()
 
@@ -426,7 +435,7 @@ class uiMainWindow(object):
 
 def main():
     try:
-        global ui
+        global ui, app
 
         app = QtGui.QApplication(sys.argv)
         MainWindow = QtGui.QMainWindow()

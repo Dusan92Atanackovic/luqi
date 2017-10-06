@@ -1,7 +1,9 @@
 __author__ = 'atana'
 
-from PyQt4 import QtCore, QtGui
-
+try:
+    from PyQt4 import QtCore, QtGui
+except Exception as e:
+    print('Error in importing libs : globalVars : ', e)
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
@@ -21,6 +23,7 @@ except AttributeError:
 db = 'programs.db'
 style_lg_w = (_fromUtf8("background-color: qlineargradient(spread:pad,x1:0.1, y1:0.3, x2:0.7, y2:0.1, stop:0 lightgreen, stop:1 white);"))
 style_lg_w_b = (_fromUtf8("background-color: qlineargradient(spread:pad,x1:0.1, y1:0.3, x2:0.7, y2:0.1, stop:0 lightgreen, stop:1 white); border:1px solid darkgreen;"))
+background_green = "::section{Background-color:green; color: white; text-align: center; }"
 
 saveDisket = 'imgs/required/btns/disketa.ico'
 dir = 'imgs/required/btns/dir.png'
